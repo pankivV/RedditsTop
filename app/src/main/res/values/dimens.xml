@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="post_container_padding">8dp</dimen>
+    <dimen name="post_common_padding">16dp</dimen>
+    <dimen name="post_common_margin">16dp</dimen>
+</resources>
