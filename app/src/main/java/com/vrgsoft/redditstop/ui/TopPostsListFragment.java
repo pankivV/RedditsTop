@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.vrgsoft.redditstop.MainActivity;
 import com.vrgsoft.redditstop.R;
 import com.vrgsoft.redditstop.data.DataDownloader;
 import com.vrgsoft.redditstop.data.OnDataUpdateCallback;
@@ -55,7 +56,7 @@ public class TopPostsListFragment extends Fragment implements PostImageClickCall
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mViewModel = ViewModelProviders.of(this).get(TopPostsListViewModel.class);
+        mViewModel = ViewModelProviders.of(getActivity()).get(TopPostsListViewModel.class);
         Handler handler = new Handler();
         mViewModel.initDownloadTask(handler, new ThumbnailDownloader.ThumbnailDownloadListener<View>() {
             @Override
@@ -79,22 +80,18 @@ public class TopPostsListFragment extends Fragment implements PostImageClickCall
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-    }
-
-    @Override
     public void onDestroy() {
         super.onDestroy();
         mViewModel.onConfigurationChanged();
     }
 
-    public void setProgressView(boolean show){
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mViewModel.destroyView();
+    }
+
+    private void setProgressView(boolean show){
         mProgressBar.setVisibility(show ? View.VISIBLE : View.GONE);
         mListContainer.setVisibility(show ? View.GONE : View.VISIBLE);
     }
@@ -102,6 +99,7 @@ public class TopPostsListFragment extends Fragment implements PostImageClickCall
     //callback for image click
     @Override
     public void onClick(Post post) {
-
+        mViewModel.selectPostsImageUrl(post.getHighResImageUrl());
+        ((MainActivity)getActivity()).startImageFragment(post.getHighResImageUrl());
     }
 }

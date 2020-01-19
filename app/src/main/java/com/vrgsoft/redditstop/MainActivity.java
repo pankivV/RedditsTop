@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment;
 
 import android.os.Bundle;
 
+import com.vrgsoft.redditstop.ui.ImageFragment;
 import com.vrgsoft.redditstop.ui.TopPostsListFragment;
 
 public class MainActivity extends AppCompatActivity {
@@ -22,5 +23,32 @@ public class MainActivity extends AppCompatActivity {
                     .add(R.id.container, fragment)
                     .commit();
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.container);
+        if (fragment instanceof ImageFragment){
+            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+            getSupportFragmentManager().popBackStack();
+        }else {
+            super.onBackPressed();
+        }
+    }
+
+    private void startFragment(Fragment fragment, String tag){
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(
+                        R.id.container,
+                        fragment)
+                .addToBackStack(tag)
+                .commit();
+    }
+
+    public void startImageFragment(String url){
+        ImageFragment fragment = new ImageFragment();
+        //ImageFragment fragment = ImageFragment.getInstance(url);
+        startFragment(fragment, ImageFragment.TAG);
     }
 }

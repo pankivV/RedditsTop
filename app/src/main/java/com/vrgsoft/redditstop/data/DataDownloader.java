@@ -1,5 +1,8 @@
 package com.vrgsoft.redditstop.data;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.util.Log;
@@ -19,9 +22,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.loader.content.AsyncTaskLoader;
+
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.CHILDREN;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.CREATED_UTC;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.DATA;
+import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.IMAGE_URL;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.NUM_COMMENTS;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.SELF;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.SUBREDDIT_NAME_PREFIXED;
@@ -62,6 +70,7 @@ public class DataDownloader {
                 if (post.hasImage()){
                     post.setThumbnailHeight(linkDataScope.getInt(THUMBNAIL_HEIGHT));
                     post.setThumbnailWidth(linkDataScope.getInt(THUMBNAIL_WIDTH));
+                    post.setHighResImageUrl(linkDataScope.getString(IMAGE_URL));
                 }
                 posts.add(post);
             }
@@ -93,6 +102,7 @@ public class DataDownloader {
         }
     }
 
+
     public byte[] getUrlBytes(String urlString) throws IOException {
         URL url = new URL(urlString);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -101,7 +111,7 @@ public class DataDownloader {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             InputStream in = connection.getInputStream();
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                mOnDataUpdateCallback.onConnectionFailed();
+                return null;
             }
             int bytesRead = 0;
             byte[] buffer = new byte[1024];
@@ -114,5 +124,4 @@ public class DataDownloader {
             connection.disconnect();
         }
     }
-
 }

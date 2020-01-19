@@ -1,5 +1,6 @@
 package com.vrgsoft.redditstop.ui;
 
+import android.content.Context;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.vrgsoft.redditstop.R;
+import com.vrgsoft.redditstop.Utils;
 import com.vrgsoft.redditstop.data.ThumbnailDownloader;
 import com.vrgsoft.redditstop.data.model.Post;
 
@@ -24,6 +26,7 @@ public class TopPostsListAdapter extends RecyclerView.Adapter<TopPostsListAdapte
     private List<Post> mPostList = new ArrayList<>();
     private PostImageClickCallback mPostImageClickCallback;
     private ThumbnailDownloader<View> mThumbnailDownloader;
+
     public TopPostsListAdapter(PostImageClickCallback themeClickCallback) {
         mPostImageClickCallback = themeClickCallback;
     }
@@ -84,20 +87,21 @@ public class TopPostsListAdapter extends RecyclerView.Adapter<TopPostsListAdapte
 
         public void bind(final Post post) {
             mAuthor.setText(post.getAuthor());
-            mTime.setText(String.valueOf(post.getPostTime()));
+            String time = Utils.getXTimeAgo(post.getPostTime());
+            mTime.setText(time);
             mTitle.setText(post.getTitle());
-            /*mImage.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mPostImageClickCallback.onClick(post);
-                }
-            });*/
             mComments.setText(String.valueOf(post.getCommentsCount()));
         }
 
-        public void setImage(Post post){
+        public void setImage(final Post post){
             if (mThumbnailDownloader != null) {
                 this.mThumbnailDownloader.loadThumbnail(mImage, post.getThumbnailUrl());
+                mImage.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        mPostImageClickCallback.onClick(post);
+                    }
+                });
             }
         }
     }

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">RedditsTop</string>
+    <string name="time_format">%02d:%02d:%02d ago</string>
 </resources>

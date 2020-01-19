@@ -13,4 +13,5 @@ public class RedditJSONKeyNames {
     public static final String CREATED_UTC = "created_utc";
     public static final String SELF = "self";
     public static final String DEFAULT = "default";
+    public static final String IMAGE_URL = "url";
 }

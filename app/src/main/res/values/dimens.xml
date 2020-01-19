@@ -3,4 +3,5 @@
     <dimen name="post_container_padding">8dp</dimen>
     <dimen name="post_common_padding">16dp</dimen>
     <dimen name="post_common_margin">16dp</dimen>
+    <dimen name="post_text_elements_padding">4dp</dimen>
 </resources>

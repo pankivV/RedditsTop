@@ -82,6 +82,11 @@ public class ThumbnailDownloader<T> extends HandlerThread {
             void onHandleRequest(T t);
         }
     }
+
+    public void clearQueue(){
+        mRequestHandler.removeMessages(DOWNLOAD_MESSAGE);
+        mRequestMap.clear();
+    }
     private void handleRequest(final T t){
         try{
             final String url = mRequestMap.get(t);
