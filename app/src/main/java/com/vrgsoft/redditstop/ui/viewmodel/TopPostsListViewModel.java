@@ -11,22 +11,27 @@ import com.vrgsoft.redditstop.data.ThumbnailDownloader;
 import com.vrgsoft.redditstop.data.model.Post;
 import com.vrgsoft.redditstop.ui.ImageFragment;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 
-public class TopPostsListViewModel extends AndroidViewModel {
+import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.AFTER;
+
+public class TopPostsListViewModel extends AndroidViewModel implements OnDataUpdateCallback {
 
     public static final int LOADER_ID = 1;
     private Repository mRepository;
 
     private List<Post> mPosts;
     private String mUrl;
+    private OnDataUpdateCallback mUiCallback;
 
     public TopPostsListViewModel(@NonNull Application application) {
         super(application);
         mRepository = Repository.getInstance();
+        mPosts = new ArrayList<>();
     }
 
     public void selectPostsImageUrl(String url){
@@ -36,8 +41,19 @@ public class TopPostsListViewModel extends AndroidViewModel {
         return mUrl;
     }
 
-    public void getPosts(OnDataUpdateCallback callback){
-        mRepository.getJSONData(callback);
+    public void getPosts(final OnDataUpdateCallback callback){
+        mUiCallback = callback;
+        if (mPosts.isEmpty()) {
+            mRepository.getJSONData(this);
+        }else {
+            callback.onDataUpdate(mPosts);
+        }
+    }
+
+    public void updatePosts(OnDataUpdateCallback callback){
+        mUiCallback = callback;
+        String paramValue = mPosts.get(mPosts.size()-1).getAfter();
+        mRepository.getJSONData(this, new String[]{AFTER, paramValue});
     }
 
 
@@ -59,5 +75,11 @@ public class TopPostsListViewModel extends AndroidViewModel {
 
     public void initImageDownload(ImageFragment imageFragment, OnImageLoadCallback imageLoadCallback) {
         mRepository.initImageLoaderTask(imageFragment, LOADER_ID, getSelectedImageUrl(),imageLoadCallback);
+    }
+
+    @Override
+    public void onDataUpdate(List<Post> posts) {
+        mPosts.addAll(posts);
+        mUiCallback.onDataUpdate(posts);
     }
 }

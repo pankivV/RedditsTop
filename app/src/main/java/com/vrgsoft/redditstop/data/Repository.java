@@ -18,19 +18,14 @@ import java.util.logging.LogRecord;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
-
-import static com.vrgsoft.redditstop.ui.ImageFragment.LOADER_ID;
-import static com.vrgsoft.redditstop.ui.ImageFragment.URL_KEY;
 
 public class Repository {
 
     private static Repository sRepository;
 
     private ThumbnailDownloader<View> mThumbnailDownloader;
-
     private List<Post> mPosts;
 
     public static Repository getInstance() {
@@ -54,7 +49,7 @@ public class Repository {
 
     public void getJSONData(OnDataUpdateCallback onDataUpdateCallback){
         DataDownloader dataDownloader = new DataDownloader(onDataUpdateCallback);
-        dataDownloader.getPosts();
+        dataDownloader.getPosts(null);
     }
 
     public void initImageLoaderTask(final Fragment fragment, int id, String url, final OnImageLoadCallback callbacks){
@@ -92,5 +87,10 @@ public class Repository {
 
     public void uiViewDestroyed() {
         mThumbnailDownloader.clearQueue();
+    }
+
+    public void getJSONData(OnDataUpdateCallback callback, String[]... queryParams) {
+        DataDownloader dataDownloader = new DataDownloader(callback);
+        dataDownloader.getPosts(queryParams);
     }
 }

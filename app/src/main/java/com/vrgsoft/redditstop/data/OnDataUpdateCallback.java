@@ -7,6 +7,4 @@ import java.util.List;
 public interface OnDataUpdateCallback {
 
     void onDataUpdate(List<Post> posts);
-
-    void onConnectionFailed();
 }

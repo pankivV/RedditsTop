@@ -28,9 +28,6 @@ import com.vrgsoft.redditstop.data.OnImageLoadCallback;
 
 import com.vrgsoft.redditstop.ui.viewmodel.TopPostsListViewModel;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -43,8 +40,6 @@ import androidx.lifecycle.ViewModelProviders;
 public class ImageFragment extends Fragment implements OnImageLoadCallback {
 
     public static final String TAG = "ImageFragment";
-    public static final String URL_KEY = "url_key";
-    public static final int LOADER_ID = 1;
 
     private static final int WRITE_EXTERNAL_STORAGE_PERMISSION = 0;
     private static final String[] PERMISSIONS = new String[]{
@@ -55,14 +50,6 @@ public class ImageFragment extends Fragment implements OnImageLoadCallback {
     private FloatingActionButton mFab;
     private ProgressBar mProgressBar;
     private TopPostsListViewModel mViewModel;
-
-    /*public static ImageFragment getInstance(String url) {
-        ImageFragment fragment = new ImageFragment();
-        Bundle args = new Bundle();
-        args.putString(URL_KEY, url);
-        fragment.setArguments(args);
-        return fragment;
-    }*/
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {

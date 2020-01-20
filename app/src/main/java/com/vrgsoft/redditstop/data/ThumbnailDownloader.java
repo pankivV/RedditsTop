@@ -88,26 +88,22 @@ public class ThumbnailDownloader<T> extends HandlerThread {
         mRequestMap.clear();
     }
     private void handleRequest(final T t){
-        try{
-            final String url = mRequestMap.get(t);
-            if (url == null) {
-                return;
-            }
-            byte[] bitmapBytes = new DataDownloader(null).getUrlBytes(url);
-            final Bitmap bitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0 , bitmapBytes.length);
-            Log.i(TAG, "handleRequest: " + bitmap.getWidth() + "x" + bitmap.getHeight());
-            mUIHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (mRequestMap.get(t) != url || mHasQuit){
-                        return;
-                    }
-                    mRequestMap.remove(t);
-                    mThumbnailDownloadListener.onThumbnailDownloaded(t, bitmap);
-                }
-            });
-        }catch (IOException e){
-            Log.i(TAG, "handleRequest: error");
+        final String url = mRequestMap.get(t);
+        if (url == null) {
+            return;
         }
+        byte[] bitmapBytes = new DataDownloader(null).getUrlBytes(url);
+        final Bitmap bitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0 , bitmapBytes.length);
+        Log.i(TAG, "handleRequest: " + bitmap.getWidth() + "x" + bitmap.getHeight());
+        mUIHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (mRequestMap.get(t) != url || mHasQuit){
+                    return;
+                }
+                mRequestMap.remove(t);
+                mThumbnailDownloadListener.onThumbnailDownloaded(t, bitmap);
+            }
+        });
     }
 }

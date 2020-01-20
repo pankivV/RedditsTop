@@ -3,6 +3,7 @@ package com.vrgsoft.redditstop.data.model;
 import android.text.TextUtils;
 
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.DEFAULT;
+import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.IMAGE;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.SELF;
 
 public class Post {
@@ -15,9 +16,18 @@ public class Post {
     private int mCommentsCount;
     private String mThumbnailUrl;
     private String mHighResImageUrl;
+    private String mAfter;
     private int mThumbnailHeight;
     private int mThumbnailWidth;
     private boolean mHasImage;
+
+    public String getAfter() {
+        return mAfter;
+    }
+
+    public void setAfter(String after) {
+        mAfter = after;
+    }
 
     public boolean hasImage() {
         return mHasImage;
@@ -29,7 +39,7 @@ public class Post {
 
     public void setThumbnailUrl(String thumbnailUrl) {
         mThumbnailUrl = thumbnailUrl;
-        mHasImage = !(TextUtils.equals(thumbnailUrl, SELF) || TextUtils.equals(thumbnailUrl, DEFAULT));
+        mHasImage = thumbnailUrl.contains(".jpg");
     }
 
     public String getHighResImageUrl() {

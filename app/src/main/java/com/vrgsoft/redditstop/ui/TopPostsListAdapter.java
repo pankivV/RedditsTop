@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.vrgsoft.redditstop.R;
@@ -19,11 +20,12 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.SELF;
+public class TopPostsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private final int LOADING_TYPE = 1;
+    private final int ITEM_TYPE = 0;
 
-public class TopPostsListAdapter extends RecyclerView.Adapter<TopPostsListAdapter.PostHolder> {
-
-    private List<Post> mPostList = new ArrayList<>();
+    private boolean isWaitForData = false;
+    private List<Post> mPostList;
     private PostImageClickCallback mPostImageClickCallback;
     private ThumbnailDownloader<View> mThumbnailDownloader;
 
@@ -36,30 +38,72 @@ public class TopPostsListAdapter extends RecyclerView.Adapter<TopPostsListAdapte
     }
 
     public void setUpAdaptersData(List<Post> posts){
-        mPostList = posts;
+        if (isWaitForData){
+            removeLoadingItem();
+        }
+        if (mPostList == null) {
+            mPostList = new ArrayList<>();
+            mPostList.addAll(posts);
+        }else {
+            mPostList.addAll(posts);
+        }
         notifyDataSetChanged();
+    }
+    private void addLoadingItem(){
+        mPostList.add(null);
+        notifyItemInserted(mPostList.size()-1);
+    }
+
+    public void removeLoadingItem(){
+        mPostList.remove(mPostList.size()-1);
+        notifyItemRemoved(mPostList.size());
+    }
+
+    public boolean isWaitForData() {
+        return isWaitForData;
+    }
+
+    public void setWaitForData(boolean waitForData) {
+        if (waitForData){
+            addLoadingItem();
+        }
+        isWaitForData = waitForData;
     }
 
     @NonNull
     @Override
-    public PostHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.post, parent, false);
-        return new PostHolder(view, mPostImageClickCallback, mThumbnailDownloader);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == ITEM_TYPE) {
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.post, parent, false);
+            return new PostHolder(view, mPostImageClickCallback, mThumbnailDownloader);
+        }else {
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.post_loading, parent, false);
+            return new LoadingItemHolder(view);
+        }
     }
 
     @Override
-    public void onBindViewHolder(@NonNull PostHolder holder, int position) {
-        Post post = mPostList.get(position);
-        holder.bind(post);
-        if (post.hasImage()){
-            holder.setImage(post);
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        if (holder instanceof PostHolder) {
+            Post post = mPostList.get(position);
+            PostHolder h = (PostHolder)holder;
+            h.bind(post);
+            if (post.hasImage()){
+                h.setImage(post);
+            }
         }
     }
 
     @Override
     public int getItemCount() {
         return mPostList == null ? 0 : mPostList.size();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return mPostList.get(position) == null ? LOADING_TYPE : ITEM_TYPE;
     }
 
     static class PostHolder extends RecyclerView.ViewHolder{
@@ -96,13 +140,25 @@ public class TopPostsListAdapter extends RecyclerView.Adapter<TopPostsListAdapte
         public void setImage(final Post post){
             if (mThumbnailDownloader != null) {
                 this.mThumbnailDownloader.loadThumbnail(mImage, post.getThumbnailUrl());
-                mImage.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        mPostImageClickCallback.onClick(post);
-                    }
-                });
+                if (post.hasImage()) {
+                    mImage.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            mPostImageClickCallback.onClick(post);
+                        }
+                    });
+                }
             }
+        }
+    }
+
+    static class LoadingItemHolder extends RecyclerView.ViewHolder{
+
+        private ProgressBar mProgressBar;
+
+        public LoadingItemHolder(@NonNull View itemView) {
+            super(itemView);
+            mProgressBar = itemView.findViewById(R.id.post_loading_progress_bar);
         }
     }
 }

@@ -3,6 +3,7 @@ package com.vrgsoft.redditstop.ui;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,12 +28,13 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class TopPostsListFragment extends Fragment implements PostImageClickCallback{
-
+public class TopPostsListFragment extends Fragment implements PostImageClickCallback, OnDataUpdateCallback{
+    private static final String TAG = "TopPostsListFragment";
     private ProgressBar mProgressBar;
     private TopPostsListAdapter mListAdapter;
     private RecyclerView mListContainer;
     private TopPostsListViewModel mViewModel;
+    private LinearLayoutManager mLayoutManager;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,8 +50,27 @@ public class TopPostsListFragment extends Fragment implements PostImageClickCall
         mListContainer = view.findViewById(R.id.top_posts_list);
         setProgressView(true);
         mListAdapter = new TopPostsListAdapter(this);
-        mListContainer.setLayoutManager(new LinearLayoutManager(getActivity().getApplicationContext()));
+        mLayoutManager = new LinearLayoutManager(getContext());
+        mListContainer.setLayoutManager(mLayoutManager);
         mListContainer.setAdapter(mListAdapter);
+        mListContainer.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (!mListAdapter.isWaitForData()) {
+                    if (mLayoutManager.findLastVisibleItemPosition() == mLayoutManager.getItemCount() - 1) {
+                        Log.i(TAG, "onScrolled: last view");
+                        mListAdapter.setWaitForData(true);
+                        mViewModel.updatePosts(TopPostsListFragment.this);
+                    }
+                }
+            }
+        });
         return view;
     }
 
@@ -70,11 +91,6 @@ public class TopPostsListFragment extends Fragment implements PostImageClickCall
             public void onDataUpdate(List<Post> posts) {
                 mListAdapter.setUpAdaptersData(posts);
                 setProgressView(false);
-            }
-
-            @Override
-            public void onConnectionFailed() {
-                Toast.makeText(getActivity(), "Error on Reddit", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -101,5 +117,11 @@ public class TopPostsListFragment extends Fragment implements PostImageClickCall
     public void onClick(Post post) {
         mViewModel.selectPostsImageUrl(post.getHighResImageUrl());
         ((MainActivity)getActivity()).startImageFragment(post.getHighResImageUrl());
+    }
+    //callback for pagination
+    @Override
+    public void onDataUpdate(List<Post> posts) {
+        mListAdapter.setUpAdaptersData(posts);
+        mListAdapter.setWaitForData(false);
     }
 }

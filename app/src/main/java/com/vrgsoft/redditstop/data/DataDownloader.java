@@ -3,6 +3,7 @@ package com.vrgsoft.redditstop.data;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.util.Log;
@@ -22,10 +23,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.loader.content.AsyncTaskLoader;
-
+import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.AFTER;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.CHILDREN;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.CREATED_UTC;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.DATA;
@@ -48,8 +46,8 @@ public class DataDownloader {
         mOnDataUpdateCallback = onDataUpdateCallback;
     }
 
-    public void getPosts() {
-        new JSONLoadTask().execute("");
+    public void getPosts(String[] ... queryParams) {
+        new JSONLoadTask().execute(queryParams);
     }
 
     private List<Post> getPostsFromJSON(String json) {
@@ -67,6 +65,7 @@ public class DataDownloader {
                 post.setPostTime(linkDataScope.getLong(CREATED_UTC));
                 post.setCommentsCount(linkDataScope.getInt(NUM_COMMENTS));
                 post.setThumbnailUrl(linkDataScope.getString(THUMBNAIL));
+                post.setAfter(dataScope.getString(AFTER));
                 if (post.hasImage()){
                     post.setThumbnailHeight(linkDataScope.getInt(THUMBNAIL_HEIGHT));
                     post.setThumbnailWidth(linkDataScope.getInt(THUMBNAIL_WIDTH));
@@ -81,19 +80,22 @@ public class DataDownloader {
         }
     }
 
-    private class JSONLoadTask extends AsyncTask<String, Void, List<Post>> {
+    private class JSONLoadTask extends AsyncTask<String[], Void, List<Post>> {
 
         @Override
-        protected List<Post> doInBackground(String... strings) {
-            String s = "";
-            try {
-                s = new String(getUrlBytes(BASE_URL));
-                Log.i(TAG, "doInBackground: " + s);
-            } catch (IOException e) {
-                Log.i(TAG, "doInBackground: error - " + e.getMessage());
-                return null;
+        protected List<Post> doInBackground(String[]... strings) {
+            byte[] data;
+            if (strings == null){
+                data = getUrlBytes(BASE_URL);
+            }else {
+                Uri.Builder builder = Uri.parse(BASE_URL).buildUpon();
+                for (String[] string : strings) {
+                    builder.appendQueryParameter(string[0], string[1]);
+                }
+                String query = builder.build().toString();
+                data = getUrlBytes(query);
             }
-            return getPostsFromJSON(s);
+            return getPostsFromJSON(new String(data));
         }
 
         @Override
@@ -103,11 +105,12 @@ public class DataDownloader {
     }
 
 
-    public byte[] getUrlBytes(String urlString) throws IOException {
-        URL url = new URL(urlString);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        Log.i(TAG, "getUrlBytes: " + connection.getResponseCode());
+    public byte[] getUrlBytes(String urlString){
+        HttpURLConnection connection = null;
         try {
+            URL url = new URL(urlString);
+            connection = (HttpURLConnection) url.openConnection();
+            Log.i(TAG, "getUrlBytes: " + connection.getResponseCode());
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             InputStream in = connection.getInputStream();
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
@@ -120,8 +123,13 @@ public class DataDownloader {
             }
             out.close();
             return out.toByteArray();
+        } catch (IOException e) {
+            Log.i(TAG, "getUrlBytes: error while getting data from: " + urlString);
+            return null;
         } finally {
-            connection.disconnect();
+            if (connection != null) {
+                connection.disconnect();
+            }
         }
     }
 }
