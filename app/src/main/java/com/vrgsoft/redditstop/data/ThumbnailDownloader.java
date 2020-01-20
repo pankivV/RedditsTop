@@ -7,12 +7,12 @@ import android.os.HandlerThread;
 import android.os.Message;
 import android.util.Log;
 
-import java.io.IOException;
+import com.vrgsoft.redditstop.data.cache.ImageCache;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 public class ThumbnailDownloader<T> extends HandlerThread {
 
@@ -24,10 +24,13 @@ public class ThumbnailDownloader<T> extends HandlerThread {
     private ConcurrentMap<T,String> mRequestMap = new ConcurrentHashMap<>();
     private ThumbnailDownloadListener mThumbnailDownloadListener;
     private Handler mUIHandler;
+    private ImageCache mImageCache;
 
     public ThumbnailDownloader(Handler handler) {
         super(TAG);
         mUIHandler = handler;
+        final int cacheSize = (int)Runtime.getRuntime().maxMemory()/1024/8;
+        mImageCache = new ImageCache(cacheSize);
     }
 
     public void loadThumbnail(T t, String url){
@@ -92,9 +95,14 @@ public class ThumbnailDownloader<T> extends HandlerThread {
         if (url == null) {
             return;
         }
-        byte[] bitmapBytes = new DataDownloader(null).getUrlBytes(url);
-        final Bitmap bitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0 , bitmapBytes.length);
-        Log.i(TAG, "handleRequest: " + bitmap.getWidth() + "x" + bitmap.getHeight());
+        Bitmap bitmap = mImageCache.getBitmapFromCache(url);
+        if (bitmap == null) {
+            byte[] bitmapBytes = new DataDownloader(null).getUrlBytes(url);
+            bitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+            mImageCache.putBitmapInCache(url, bitmap);
+            Log.i(TAG, "handleRequest: " + bitmap.getWidth() + "x" + bitmap.getHeight());
+        }
+        final Bitmap finalBitmap = bitmap;
         mUIHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -102,7 +110,7 @@ public class ThumbnailDownloader<T> extends HandlerThread {
                     return;
                 }
                 mRequestMap.remove(t);
-                mThumbnailDownloadListener.onThumbnailDownloaded(t, bitmap);
+                mThumbnailDownloadListener.onThumbnailDownloaded(t, finalBitmap);
             }
         });
     }
