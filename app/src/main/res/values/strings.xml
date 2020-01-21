@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">RedditsTop</string>
-    <string name="time_format">%02d:%02d:%02d ago</string>
+    <string name="time_format">%02d hour(s) ago</string>
+
+    <!--toasts messages-->
+    <string name="permission_denied_message">User denied permission</string>
+    <string name="image_saved_message">Image saved to Gallery</string>
+    <string name="image_saving_error_message">Error while saving image</string>
 </resources>

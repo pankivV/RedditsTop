@@ -2,6 +2,7 @@ package com.vrgsoft.redditstop.ui.viewmodel;
 
 import android.app.Application;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 
 import com.vrgsoft.redditstop.data.OnDataUpdateCallback;
@@ -21,6 +22,7 @@ import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.AFTER;
 
 public class TopPostsListViewModel extends AndroidViewModel implements OnDataUpdateCallback {
 
+    private static final String TAG = "TopPostsListViewModel";
     public static final int LOADER_ID = 1;
     private Repository mRepository;
 
@@ -32,6 +34,7 @@ public class TopPostsListViewModel extends AndroidViewModel implements OnDataUpd
         super(application);
         mRepository = Repository.getInstance();
         mPosts = new ArrayList<>();
+        //Log.i(TAG, "TopPostsListViewModel: new viewmodel created");
     }
 
     public void selectPostsImageUrl(String url){
@@ -44,7 +47,7 @@ public class TopPostsListViewModel extends AndroidViewModel implements OnDataUpd
     public void getPosts(final OnDataUpdateCallback callback){
         mUiCallback = callback;
         if (mPosts.isEmpty()) {
-            mRepository.getJSONData(this);
+            mRepository.getJSONData(this, null);
         }else {
             callback.onDataUpdate(mPosts);
         }

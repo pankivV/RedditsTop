@@ -39,6 +39,7 @@ public class TopPostsListFragment extends Fragment implements PostImageClickCall
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
     }
 
     @Nullable
@@ -49,10 +50,11 @@ public class TopPostsListFragment extends Fragment implements PostImageClickCall
         mProgressBar = view.findViewById(R.id.progress_bar);
         mListContainer = view.findViewById(R.id.top_posts_list);
         setProgressView(true);
-        mListAdapter = new TopPostsListAdapter(this);
+        mListAdapter = new TopPostsListAdapter(getContext(),this);
         mLayoutManager = new LinearLayoutManager(getContext());
         mListContainer.setLayoutManager(mLayoutManager);
         mListContainer.setAdapter(mListAdapter);
+        //listener for endless scroll/pagination
         mListContainer.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -64,7 +66,7 @@ public class TopPostsListFragment extends Fragment implements PostImageClickCall
                 super.onScrolled(recyclerView, dx, dy);
                 if (!mListAdapter.isWaitForData()) {
                     if (mLayoutManager.findLastVisibleItemPosition() == mLayoutManager.getItemCount() - 1) {
-                        Log.i(TAG, "onScrolled: last view");
+                        //Log.i(TAG, "onScrolled: last view");
                         mListAdapter.setWaitForData(true);
                         mViewModel.updatePosts(TopPostsListFragment.this);
                     }

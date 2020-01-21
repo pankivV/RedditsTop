@@ -29,7 +29,6 @@ import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.CREATED_UTC;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.DATA;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.IMAGE_URL;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.NUM_COMMENTS;
-import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.SELF;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.SUBREDDIT_NAME_PREFIXED;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.THUMBNAIL;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.THUMBNAIL_HEIGHT;
@@ -75,7 +74,7 @@ public class DataDownloader {
             }
             return posts;
         } catch (JSONException e) {
-            Log.i(TAG, "getPostsFromJSON: error - " + e.getMessage());
+            //Log.i(TAG, "getPostsFromJSON: error - " + e.getMessage());
             return null;
         }
     }
@@ -110,7 +109,7 @@ public class DataDownloader {
         try {
             URL url = new URL(urlString);
             connection = (HttpURLConnection) url.openConnection();
-            Log.i(TAG, "getUrlBytes: " + connection.getResponseCode());
+            //Log.i(TAG, "getUrlBytes: " + connection.getResponseCode());
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             InputStream in = connection.getInputStream();
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
@@ -124,7 +123,7 @@ public class DataDownloader {
             out.close();
             return out.toByteArray();
         } catch (IOException e) {
-            Log.i(TAG, "getUrlBytes: error while getting data from: " + urlString);
+            //Log.i(TAG, "getUrlBytes: error while getting data from: " + urlString);
             return null;
         } finally {
             if (connection != null) {

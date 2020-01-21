@@ -33,7 +33,7 @@ public class ImageLoader extends AsyncTaskLoader<Bitmap> {
         try {
             bitmapBytes = getUrlBytes(mUrl);
         } catch (IOException e) {
-            Log.i(TAG, "loadInBackground: " + e.getMessage());
+            //Log.i(TAG, "loadInBackground: " + e.getMessage());
             return null;
         }
         return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
@@ -42,7 +42,7 @@ public class ImageLoader extends AsyncTaskLoader<Bitmap> {
     public byte[] getUrlBytes(String urlString) throws IOException {
         URL url = new URL(urlString);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        Log.i(TAG, "getUrlBytes: " + connection.getResponseCode());
+        //Log.i(TAG, "getUrlBytes: " + connection.getResponseCode());
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             InputStream in = connection.getInputStream();

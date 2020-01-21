@@ -1,12 +1,10 @@
 package com.vrgsoft.redditstop.ui;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.vrgsoft.redditstop.R;
@@ -28,9 +26,11 @@ public class TopPostsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private List<Post> mPostList;
     private PostImageClickCallback mPostImageClickCallback;
     private ThumbnailDownloader<View> mThumbnailDownloader;
+    private Context mContext;
 
-    public TopPostsListAdapter(PostImageClickCallback themeClickCallback) {
+    public TopPostsListAdapter(Context context, PostImageClickCallback themeClickCallback) {
         mPostImageClickCallback = themeClickCallback;
+        mContext = context;
     }
 
     public void setThumbnailDownloader(ThumbnailDownloader<View> thumbnailDownloader) {
@@ -76,7 +76,7 @@ public class TopPostsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         if (viewType == ITEM_TYPE) {
             View view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.post, parent, false);
-            return new PostHolder(view, mPostImageClickCallback, mThumbnailDownloader);
+            return new PostHolder(view, mPostImageClickCallback/*, mThumbnailDownloader*/);
         }else {
             View view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.post_loading, parent, false);
@@ -106,19 +106,14 @@ public class TopPostsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         return mPostList.get(position) == null ? LOADING_TYPE : ITEM_TYPE;
     }
 
-    static class PostHolder extends RecyclerView.ViewHolder{
+    private class PostHolder extends RecyclerView.ViewHolder{
 
-        private TextView mAuthor;
-        private TextView mTime;
-        private TextView mTitle;
+        private TextView mAuthor, mTime, mTitle, mComments;
         private ImageView mImage;
-        private TextView mComments;
         private PostImageClickCallback mPostImageClickCallback;
-        private ThumbnailDownloader<View> mThumbnailDownloader;
 
         public PostHolder(@NonNull View itemView,
-                          final PostImageClickCallback postImageClickCallback,
-                          ThumbnailDownloader<View> thumbnailDownloader) {
+                          final PostImageClickCallback postImageClickCallback) {
             super(itemView);
             this.mPostImageClickCallback = postImageClickCallback;
             mAuthor = itemView.findViewById(R.id.author);
@@ -126,20 +121,20 @@ public class TopPostsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             mTitle = itemView.findViewById(R.id.title);
             mImage = itemView.findViewById(R.id.image);
             mComments = itemView.findViewById(R.id.comments);
-            mThumbnailDownloader = thumbnailDownloader;
         }
 
         public void bind(final Post post) {
             mAuthor.setText(post.getAuthor());
-            String time = Utils.getXTimeAgo(post.getPostTime());
-            mTime.setText(time);
+            int time = Utils.getXHour(post.getPostTime());
+            String xHourAgo = mContext.getResources().getString(R.string.time_format, time);
+            mTime.setText(xHourAgo);
             mTitle.setText(post.getTitle());
             mComments.setText(String.valueOf(post.getCommentsCount()));
         }
 
         public void setImage(final Post post){
             if (mThumbnailDownloader != null) {
-                this.mThumbnailDownloader.loadThumbnail(mImage, post.getThumbnailUrl());
+                mThumbnailDownloader.loadThumbnail(mImage, post.getThumbnailUrl());
                 if (post.hasImage()) {
                     mImage.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -154,11 +149,8 @@ public class TopPostsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     static class LoadingItemHolder extends RecyclerView.ViewHolder{
 
-        private ProgressBar mProgressBar;
-
         public LoadingItemHolder(@NonNull View itemView) {
             super(itemView);
-            mProgressBar = itemView.findViewById(R.id.post_loading_progress_bar);
         }
     }
 }

@@ -26,11 +26,11 @@ public class ThumbnailDownloader<T> extends HandlerThread {
     private Handler mUIHandler;
     private ImageCache mImageCache;
 
-    public ThumbnailDownloader(Handler handler) {
+    public ThumbnailDownloader(Handler handler, ImageCache lruCache) {
         super(TAG);
         mUIHandler = handler;
-        final int cacheSize = (int)Runtime.getRuntime().maxMemory()/1024/8;
-        mImageCache = new ImageCache(cacheSize);
+        mImageCache = lruCache;
+        //Log.i(TAG, "ThumbnailDownloader: new ThreadHandler created");
     }
 
     public void loadThumbnail(T t, String url){
@@ -100,7 +100,9 @@ public class ThumbnailDownloader<T> extends HandlerThread {
             byte[] bitmapBytes = new DataDownloader(null).getUrlBytes(url);
             bitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
             mImageCache.putBitmapInCache(url, bitmap);
-            Log.i(TAG, "handleRequest: " + bitmap.getWidth() + "x" + bitmap.getHeight());
+            //Log.i(TAG, "handleRequest: pull image from network");
+        }else {
+            //Log.i(TAG, "handleRequest: pull image from cache");
         }
         final Bitmap finalBitmap = bitmap;
         mUIHandler.post(new Runnable() {

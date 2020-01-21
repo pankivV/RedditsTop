@@ -1,19 +1,13 @@
 package com.vrgsoft.redditstop.data;
 
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
-import android.widget.ImageView;
 
 import com.vrgsoft.redditstop.ImageLoader;
-import com.vrgsoft.redditstop.data.model.Post;
-
-import java.util.List;
-import java.util.logging.LogRecord;
+import com.vrgsoft.redditstop.data.cache.ImageCache;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,7 +20,7 @@ public class Repository {
     private static Repository sRepository;
 
     private ThumbnailDownloader<View> mThumbnailDownloader;
-    private List<Post> mPosts;
+    private ImageCache mImageCache;
 
     public static Repository getInstance() {
         if (sRepository == null) {
@@ -39,17 +33,13 @@ public class Repository {
         return sRepository;
     }
 
-    public List<Post> getPosts() {
-        return mPosts;
+    public Repository() {
+        final int cacheSize = (int)Runtime.getRuntime().maxMemory()/1024/8;
+        mImageCache = new ImageCache(cacheSize);
     }
 
     public ThumbnailDownloader<View> getThumbnailDownloader() {
         return mThumbnailDownloader;
-    }
-
-    public void getJSONData(OnDataUpdateCallback onDataUpdateCallback){
-        DataDownloader dataDownloader = new DataDownloader(onDataUpdateCallback);
-        dataDownloader.getPosts(null);
     }
 
     public void initImageLoaderTask(final Fragment fragment, int id, String url, final OnImageLoadCallback callbacks){
@@ -75,7 +65,7 @@ public class Repository {
     }
 
     public void initThumbnailDownloaderTask(Handler handler,ThumbnailDownloader.ThumbnailDownloadListener<View> listener){
-        mThumbnailDownloader = new ThumbnailDownloader<>(handler);
+        mThumbnailDownloader = new ThumbnailDownloader<>(handler, mImageCache);
         mThumbnailDownloader.setThumbnailDownloadListener(listener);
         mThumbnailDownloader.start();
         mThumbnailDownloader.getLooper();
