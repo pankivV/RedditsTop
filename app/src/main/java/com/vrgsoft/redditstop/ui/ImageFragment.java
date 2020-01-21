@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaScannerConnection;
@@ -40,6 +41,8 @@ import androidx.lifecycle.ViewModelProviders;
 public class ImageFragment extends Fragment implements OnImageLoadCallback {
 
     public static final String TAG = "ImageFragment";
+    private static final String SAVED_IMAGE_URL_KEY = "saved_image";
+    private static final String IMAGE_DESCRIPTION = "REDDIT_";
 
     private static final int WRITE_EXTERNAL_STORAGE_PERMISSION = 0;
     private static final String[] PERMISSIONS = new String[]{
@@ -56,6 +59,13 @@ public class ImageFragment extends Fragment implements OnImageLoadCallback {
         super.onCreate(savedInstanceState);
         ((MainActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setHasOptionsMenu(true);
+        setRetainInstance(true);
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(SAVED_IMAGE_URL_KEY, mViewModel.getSelectedImageUrl());
     }
 
     @Nullable
@@ -70,7 +80,7 @@ public class ImageFragment extends Fragment implements OnImageLoadCallback {
         mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if ( ContextCompat.checkSelfPermission(getContext(), PERMISSIONS[0]) == PackageManager.PERMISSION_GRANTED){
+                if (hasPermissions()){
                     saveToGallery(((BitmapDrawable)mImageView.getDrawable()).getBitmap());
                 }else{
                     requestPermissions(PERMISSIONS, WRITE_EXTERNAL_STORAGE_PERMISSION);
@@ -82,23 +92,32 @@ public class ImageFragment extends Fragment implements OnImageLoadCallback {
     }
 
     private void saveToGallery(final Bitmap bitmap) {
-        new Runnable(){
-            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-            String imageFileName = "REDDIT_" + timeStamp;
-            @Override
-            public void run() {
-                Utils.saveImageToGallery(getActivity().getContentResolver(),
-                        bitmap,
-                        imageFileName,
-                        "reddit");
-            }
-        }.run();
+        if (hasPermissions()) {
+            new Runnable() {
+                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+                String imageFileName = IMAGE_DESCRIPTION + timeStamp;
+
+                @Override
+                public void run() {
+                    Utils.saveImageToGallery(getContext(),
+                            bitmap,
+                            imageFileName,
+                            IMAGE_DESCRIPTION);
+                }
+            }.run();
+        }else {
+            requestPermissions(PERMISSIONS, WRITE_EXTERNAL_STORAGE_PERMISSION);
+        }
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mViewModel = ViewModelProviders.of(getActivity()).get(TopPostsListViewModel.class);
+        //restore url from bundle in case when system kills activity
+        if (savedInstanceState != null){
+            mViewModel.selectPostsImageUrl(savedInstanceState.getString(SAVED_IMAGE_URL_KEY));
+        }
         mViewModel.initImageDownload(this, this);
     }
 
@@ -106,7 +125,6 @@ public class ImageFragment extends Fragment implements OnImageLoadCallback {
         mProgressBar.setVisibility(show ? View.VISIBLE : View.GONE);
         mImageView.setVisibility(show ? View.GONE : View.VISIBLE);
     }
-
 
     @Override
     public void onImageLoaded(Bitmap bitmap) {
@@ -130,10 +148,10 @@ public class ImageFragment extends Fragment implements OnImageLoadCallback {
             case WRITE_EXTERNAL_STORAGE_PERMISSION: {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "onRequestPermissionsResult: permissions granted");
+                    //Log.d(TAG, "onRequestPermissionsResult: permissions granted");
                     saveToGallery(((BitmapDrawable)mImageView.getDrawable()).getBitmap());
                 } else {
-                    Toast.makeText(getContext(), "User denied permission", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), getResources().getText(R.string.permission_denied_message), Toast.LENGTH_SHORT).show();
                 }
                 return;
             }
@@ -151,5 +169,10 @@ public class ImageFragment extends Fragment implements OnImageLoadCallback {
             }
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private boolean hasPermissions(){
+        int code = ContextCompat.checkSelfPermission(getContext(), PERMISSIONS[0]);
+        return code == PackageManager.PERMISSION_GRANTED;
     }
 }
