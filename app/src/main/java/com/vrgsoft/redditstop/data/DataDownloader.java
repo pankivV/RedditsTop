@@ -1,15 +1,10 @@
 package com.vrgsoft.redditstop.data;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.text.TextUtils;
 import android.util.Log;
 
 import com.vrgsoft.redditstop.data.model.Post;
-import com.vrgsoft.redditstop.data.RedditJSONKeyNames;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,8 +22,12 @@ import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.AFTER;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.CHILDREN;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.CREATED_UTC;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.DATA;
+import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.FALLBACK_URL;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.IMAGE_URL;
+import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.IS_VIDEO;
+import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.MEDIA;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.NUM_COMMENTS;
+import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.REDDIT_VIDEO;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.SUBREDDIT_NAME_PREFIXED;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.THUMBNAIL;
 import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.THUMBNAIL_HEIGHT;
@@ -56,8 +55,8 @@ public class DataDownloader {
             JSONObject body = new JSONObject(json);
             JSONObject dataScope = body.getJSONObject(DATA);
             JSONArray children = dataScope.getJSONArray(CHILDREN);
-            for (int i = 0; i < children.length(); i++) {
-                JSONObject linkDataScope = children.getJSONObject(i).getJSONObject(DATA);
+            for (int children_i = 0; children_i < children.length(); children_i++) {
+                JSONObject linkDataScope = children.getJSONObject(children_i).getJSONObject(DATA);
                 Post post = new Post();
                 post.setAuthor(linkDataScope.getString(SUBREDDIT_NAME_PREFIXED));
                 post.setTitle(linkDataScope.getString(TITLE));
@@ -65,10 +64,16 @@ public class DataDownloader {
                 post.setCommentsCount(linkDataScope.getInt(NUM_COMMENTS));
                 post.setThumbnailUrl(linkDataScope.getString(THUMBNAIL));
                 post.setAfter(dataScope.getString(AFTER));
-                if (post.hasImage()){
-                    post.setThumbnailHeight(linkDataScope.getInt(THUMBNAIL_HEIGHT));
-                    post.setThumbnailWidth(linkDataScope.getInt(THUMBNAIL_WIDTH));
-                    post.setHighResImageUrl(linkDataScope.getString(IMAGE_URL));
+                post.setUrl(linkDataScope.getString(IMAGE_URL));
+                if (!linkDataScope.isNull(MEDIA)){
+                    JSONObject media = linkDataScope.getJSONObject(MEDIA);
+                    if (linkDataScope.has(REDDIT_VIDEO)) {
+                        JSONObject redditVideo = media.getJSONObject(REDDIT_VIDEO);
+                        post.setVideoUrl(redditVideo.getString(FALLBACK_URL));
+                        post.setVideo(linkDataScope.getBoolean(IS_VIDEO));
+                    }
+                }else {
+                    post.setVideo(false);
                 }
                 posts.add(post);
             }

@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 
-import com.vrgsoft.redditstop.ImageLoader;
 import com.vrgsoft.redditstop.data.cache.ImageCache;
 
 import androidx.annotation.NonNull;

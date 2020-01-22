@@ -3,17 +3,14 @@ package com.vrgsoft.redditstop.ui;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.vrgsoft.redditstop.MainActivity;
 import com.vrgsoft.redditstop.R;
-import com.vrgsoft.redditstop.data.DataDownloader;
 import com.vrgsoft.redditstop.data.OnDataUpdateCallback;
 import com.vrgsoft.redditstop.data.ThumbnailDownloader;
 import com.vrgsoft.redditstop.data.model.Post;
@@ -117,8 +114,8 @@ public class TopPostsListFragment extends Fragment implements PostImageClickCall
     //callback for image click
     @Override
     public void onClick(Post post) {
-        mViewModel.selectPostsImageUrl(post.getHighResImageUrl());
-        ((MainActivity)getActivity()).startImageFragment(post.getHighResImageUrl());
+        mViewModel.selectPostsImageUrl(post.getUrl());
+        ((MainActivity)getActivity()).startImageFragment(post.getUrl());
     }
     //callback for pagination
     @Override

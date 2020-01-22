@@ -1,25 +1,36 @@
 package com.vrgsoft.redditstop.data.model;
 
-import android.text.TextUtils;
-
-import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.DEFAULT;
-import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.IMAGE;
-import static com.vrgsoft.redditstop.data.RedditJSONKeyNames.SELF;
-
 public class Post {
 
     private String mAuthor;
     private long mPostTime;
     private String mTitle;
-    private String mImageUrl;
-    private String mImageUrlBig;
     private int mCommentsCount;
     private String mThumbnailUrl;
-    private String mHighResImageUrl;
+    private String mUrl;
     private String mAfter;
+    private String mVideoUrl;
     private int mThumbnailHeight;
     private int mThumbnailWidth;
     private boolean mHasImage;
+    private boolean mHasAnimatedImage;
+    private boolean isVideo;
+
+    public boolean isVideo() {
+        return isVideo;
+    }
+
+    public void setVideo(boolean video) {
+        isVideo = video;
+    }
+
+    public String getVideoUrl() {
+        return mVideoUrl;
+    }
+
+    public void setVideoUrl(String videoUrl) {
+        mVideoUrl = videoUrl;
+    }
 
     public String getAfter() {
         return mAfter;
@@ -33,21 +44,28 @@ public class Post {
         return mHasImage;
     }
 
+    public boolean hasAnimatedImage() {
+        return mHasAnimatedImage;
+    }
+
     public String getThumbnailUrl() {
         return mThumbnailUrl;
     }
 
     public void setThumbnailUrl(String thumbnailUrl) {
-        mThumbnailUrl = thumbnailUrl;
-        mHasImage = thumbnailUrl.contains(".jpg");
+        if (thumbnailUrl.contains(".jpg")) {
+            mThumbnailUrl = thumbnailUrl;
+        }
     }
 
-    public String getHighResImageUrl() {
-        return mHighResImageUrl;
+    public String getUrl() {
+        return mUrl;
     }
 
-    public void setHighResImageUrl(String highResImageUrl) {
-        mHighResImageUrl = highResImageUrl;
+    public void setUrl(String url) {
+        mUrl = url;
+        mHasImage = url.contains(".jpg");
+        mHasAnimatedImage = url.contains(".gif");
     }
 
     public int getThumbnailHeight() {
@@ -88,22 +106,6 @@ public class Post {
 
     public void setTitle(String title) {
         mTitle = title;
-    }
-
-    public String getImageUrl() {
-        return mImageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        mImageUrl = imageUrl;
-    }
-
-    public String getImageUrlBig() {
-        return mImageUrlBig;
-    }
-
-    public void setImageUrlBig(String imageUrlBig) {
-        mImageUrlBig = imageUrlBig;
     }
 
     public int getCommentsCount() {

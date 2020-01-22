@@ -1,4 +1,4 @@
-package com.vrgsoft.redditstop;
+package com.vrgsoft.redditstop.data;
 
 import android.content.Context;
 import android.graphics.Bitmap;

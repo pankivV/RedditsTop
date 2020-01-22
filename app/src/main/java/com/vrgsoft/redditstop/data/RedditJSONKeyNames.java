@@ -16,4 +16,8 @@ public class RedditJSONKeyNames {
     public static final String IMAGE = "image";
     public static final String IMAGE_URL = "url";
     public static final String AFTER = "after";
+    public static final String IS_VIDEO = "is_video";
+    public static final String MEDIA = "media";
+    public static final String REDDIT_VIDEO = "reddit_video";
+    public static final String FALLBACK_URL = "fallback_url";
 }

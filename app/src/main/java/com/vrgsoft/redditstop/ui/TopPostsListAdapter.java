@@ -90,9 +90,7 @@ public class TopPostsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             Post post = mPostList.get(position);
             PostHolder h = (PostHolder)holder;
             h.bind(post);
-            if (post.hasImage()){
-                h.setImage(post);
-            }
+            h.setImage(post);
         }
     }
 
@@ -134,7 +132,10 @@ public class TopPostsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
         public void setImage(final Post post){
             if (mThumbnailDownloader != null) {
-                mThumbnailDownloader.loadThumbnail(mImage, post.getThumbnailUrl());
+                String thumbnail = post.getThumbnailUrl();
+                if (thumbnail != null) {
+                    mThumbnailDownloader.loadThumbnail(mImage, thumbnail);
+                }
                 if (post.hasImage()) {
                     mImage.setOnClickListener(new View.OnClickListener() {
                         @Override
